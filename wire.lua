@@ -1,4 +1,5 @@
--- Wire
+-- wire
+-- git@github.com:italonascimento/wire.git
 -- v0.0.1
 -- MIT License
 
@@ -63,5 +64,6 @@ end
 
 return {
   isolate = isolate,
-  run = run
+  run = run,
+  assign = assign
 }
