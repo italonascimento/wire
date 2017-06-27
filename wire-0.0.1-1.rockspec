@@ -23,6 +23,9 @@ build = {
  type = "builtin",
 
  modules = {
-   wire = "wire.lua",
+   wire = "wire/init.lua",
+   ["wire.run"] = "wire/run.lua",
+   ["wire.isolate"] = "wire/isolate.lua",
+   ["wire.assign"] = "wire/assign.lua"
  }
 }
