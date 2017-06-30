@@ -2,23 +2,76 @@
 
 **Wire** is a small reactive wrapping for [LÖVE](https://love2d.org/) framework,
 highly inspired in [Cycle.js](cycle.js.org) (the web development framework) and it's fractal state
-management, [Onionify](https://github.com/staltz/cycle-onionify).
+management, [onionify](https://github.com/staltz/cycle-onionify).
 
-Wire allows you to take advantage of the simplicity of LÖVE in a fully
-reactive and delightfull way. You just need to wire everything up
-**declarativelly**, and let the data flow freely throughout your game.
-
-# Reactive?
-
-Not familiar with reactive programming? You may want to take a look at this
-great article first, as a basic understanding of data streams will be
-necessary throught this documentation:
-[The introduction to Reactive Programming you've been
-missing](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754)
+Wire allows you to take advantage of the awesomeness of LÖVE in a fully
+reactive and delightfull way. No global variables all around, no imperative
+actions and side-effects, no mixed concerns. You just need to wire
+everything up **declarativelly**, and let the data flow freely throughout
+your game, reading game state from a single centralized source of truth (AKA store).
 
 # Installation
 
 More info coming soon. :hourglass:
+
+# Reactive?
+
+Not familiar with reactive programming? You may want to take a look at this
+great article first:
+
+[The introduction to Reactive Programming you've been
+missing](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754)
+
+# Concept
+
+Wire completely embraces the asynchronous nature of human/computer interactions.
+
+To understand it, let's start by thinking of user actions as a stream of events
+occuring over time:
+
+--U--D--U--D--U--U--U--|
+
+Supose these events correspond to pressing Up and Down keys on the keyboard.
+
+Each of those events will now trigger specific tasks within our game system,
+where the logics will happen and the data will be processed.
+
+Suppose, for example, that our system will process those actions by Incrementing
+and Decrementing a counter:
+
+---U--D--U--D--U--U--U--|
+   |  |  |  |  |  |  |  
+---I--D--I--D--I--I--I--|
+
+The incrementing/decrementing processing will happen asynchonouslly, triggered
+by each user action, and will update the system state:
+
+---U--D--U--D--U--U--U--|
+   |  |  |  |  |  |  |  
+---I--D--I--D--I--I--I--|
+   |  |  |  |  |  |  |  
+0--1--0--1--0--1--2--3--|
+
+After finished the asynchronous processing and updated the data, the system
+is ready to respond to the user, producing the desired side-effects:
+showing something on the screen or emiting a sound, etc.
+
+In short, everything that's presented to the user is defined as a pure function
+of the state.
+
+Similarlly, the state is nothing more than a stream whose emited values are
+a function of user actions/intent.
+
+Intent: ---U--D--U--D--U--U--U--|
+           |  |  |  |  |  |  |  
+Logic:  ---I--D--I--D--I--I--I--|
+           |  |  |  |  |  |  |  
+State:  0--1--0--1--0--1--2--3--|
+
+Wire helps us tie this up in a declarative and reactive way, so the flux
+from intent to side-effects happens automatically, one change of data leading
+to another and so on.
+
 
 # How to use
 
