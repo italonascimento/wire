@@ -10,9 +10,11 @@ actions and side-effects, no mixed concerns. You just need to wire
 everything up **declarativelly**, and let the data flow freely throughout
 your game, reading game state from a single centralized source of truth (AKA store).
 
+
 # Installation
 
 More info coming soon. :hourglass:
+
 
 # Reactive?
 
@@ -22,65 +24,39 @@ great article first:
 [The introduction to Reactive Programming you've been
 missing](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754)
 
+
 # Concept
 
-Wire completely embraces the asynchronous nature of human/computer interactions.
+In complex systems such as games, the human/computer interaction is mostly of
+an asynchronous nature.
 
-To understand it, let's start by thinking of user actions as a stream of events
-occuring over time:
+Based on this understanding, Wire deals with user intent as a stream of
+events, which are asynchronouslly modeled into data streams.
 
---U--D--U--D--U--U--U--|
+The data streams, then, are asynchronouslly modeled into side-effects,
+producing output for the user.
 
-Supose these events correspond to pressing Up and Down keys on the keyboard.
+To better understand, take as and example a stream of user clicks:
 
-Each of those events will now trigger specific tasks within our game system,
-where the logics will happen and the data will be processed.
+Intent: ---C-----C--C-----C----|
 
-Suppose, for example, that our system will process those actions by Incrementing
-and Decrementing a counter:
+Everytime the user clicks, a new event is emited in the stream.
 
----U--D--U--D--U--U--U--|
-   |  |  |  |  |  |  |  
----I--D--I--D--I--I--I--|
+Now, we may listen to the Intent events and, on each emission, model them
+into a new stream, which will hold the counting of the clicks:
 
-The incrementing/decrementing processing will happen asynchonouslly, triggered
-by each user action, and will update the system state:
+Intent: ---C-----C--C-----C----|  
+Data:   0--1-----2--3-----4----|
 
----U--D--U--D--U--U--U--|
-   |  |  |  |  |  |  |  
----I--D--I--D--I--I--I--|
-   |  |  |  |  |  |  |  
-0--1--0--1--0--1--2--3--|
-
-After finished the asynchronous processing and updated the data, the system
-is ready to respond to the user, producing the desired side-effects:
-showing something on the screen or emiting a sound, etc.
-
-In short, everything that's presented to the user is defined as a pure function
-of the state.
-
-Similarlly, the state is nothing more than a stream whose emited values are
-a function of user actions/intent.
-
-Intent: ---U--D--U--D--U--U--U--|
-           |  |  |  |  |  |  |  
-Logic:  ---I--D--I--D--I--I--I--|
-           |  |  |  |  |  |  |  
-State:  0--1--0--1--0--1--2--3--|
-
-Wire helps us tie this up in a declarative and reactive way, so the flux
-from intent to side-effects happens automatically, one change of data leading
-to another and so on.
+As the Data stream is listening to the Intent events, everytime the user
+clicks the data gets updated. And by listening to the Data stream events,
+we're abble to display information to the user everytime the data changes,
+automatically.
 
 
 # How to use
 
 ## Creating a component
-
-Every wire component follow two simple rules:
-
-1. Separation of concerns;
-2. Just logics, no side-effects.
 
 Let's get started by creating a simple `game.lua` file containing the
 following four functions:
@@ -94,7 +70,7 @@ local function intent()
 
 end
 
-local function reduce()
+local function model()
 
 end
 
@@ -103,133 +79,131 @@ local function render()
 end
 ```
 
+### The constructor
+
 The first function, as you may have noticed, is an anonimous function, and
-will take the role of a constructor. We'll get back to it soon.
+will take the role of a constructor. It will recieve a `sources` argument, and
+may return a table with two keys: `reducer` and `render`.
+
+As we can't yet define these values, we'll come back to the constructor later.
+
 
 ### Intent
 
 The `intent` function is the place we define all the possible user's intent
-concerning our component. And, as user intent are events that occur over time,
-we're going to define them as event streams.
+concerning our component.
+
+Let's define the click intent we talked about before.
 
 ```lua
 local function intent()
   return {
-    space = love.keypress:filter(function(key)
-      return key == 'space'
-    end)
+    click = love.mousepressed
   }
 end
 ```
 
-Here we're defining an intent called `space`, which is a stream that emits
-everytime the user hits space.
+### Model
 
+The `model` function is the place we define how our intents should be reduced
+into data.
 
-### Reduce
+This is where the modeling process we talked before takes place, but we're not
+going to manipulate the data directly, instead we're going to define reducers.
 
-The `reduce` function is the place we define how our intents should be reduced
-into game state.
+A reducer is a pure function which recieves the current game state (the data)
+and returns an updated one.
 
 ```lua
-local function reduce(intent)
-  return intent.space:map(function(prevState)
-    local newState = {
-      foo = prevState.foo + 'bar'
-    }
+local function model(intent)
+  return intent.click:map(function()
+    return function(prevState)
+      local newState = {
+        clickCount = prevState.clickCount + 1
+      }
 
-    return newState
+      return newState
+    end
   end)
 end
 ```
 
-This is how we define a reducer: by mapping every intent emited in the stream
-to a function, which recieves a *previous state* object and returns a *new
-state* one.
-
-So anytime the player press space, the `foo` field of our game's state will
-get the string `' bar'` concatenated to it.
-
-Note the importance of the word *define* in this situation, as we're not
-acctually *doing* anything here, but instead *declaring* how data should
-proccessed as soon as our `space` intent emits an event.
-
-### Initial state
-
 For the reduce proccess to make sense, though, we need to have a initial state.
-And we're going to define it as another stream: one that  emits right away,
-providing the initial data we need:
+Right now, when the user first clicks, we'll try to sum 1 to `nil`, as
+`clickCount` is not defined.
+
+To create a initial state, we just need to create another stream of reducer,
+but one that will emit right away, independent of any intent:
 
 ```lua
-local rx = require 'rx'
-
-local function reduce(intent)
-  return rx.Observable.merge(
-    rx.Observable.of(function()
+local function model(intent)
+  local initialReducer = rx.Observable.of(
+    function()
       return {
-        foo = ''
+        clickCount = 0
       }
-    end),
+    end
+  )
 
-    intent.space:map(function(prevState)
-      local newState = {
-        foo = prevState.foo + ' bar'
-      }
+  local clickReducer = intent.click:map(
+    function()
+      return function(prevState)
+        local newState = {
+          clickCount = prevState.clickCount + 1
+        }
 
-      return newState
-    end)
+        return newState
+      end
+    end
+  )
+
+  return rx.Observable.merge(
+    initialReducer,
+    clickReducer
+  )
 end
 ```
 
-As we have more than one stream in this case, we must merge them together
-in single a stream to be returned.
+Note that as we now have more than one reducer streams, we must merge them
+together to return a single stream of all reducers.
+
 
 ### Render
 
 The `render` function, as you may expect, is where we define what gets
-rendered to the screen. But, as we're **just defining**, we can't acctually
-render anything right now. Instead, we're going to return a new function
-which will be responsible to actual render when the time is come.
+rendered to the screen.
+
+As we're **just defining**, we won't acctually render anything here.
+Instead, we're going to recieve the current state and return a new function,
+which Wire will use to make the actual rendeing.
 
 ```lua
 local function render(state)
+  local message = 'Clicks: '..state.clickCount
+
   return function()
-    love.graphics.print(state.foo, 32, 32)
+    love.graphics.print(message, 32, 32)
   end
 end
 ```
 
-Note how we decide what to render based on the current state. No global
-variables, everything should go throught the state.
+### Wiring it up
 
-### The constructor
-
-The constructor is the main function of each component. It's where we wire  
-everything up.
-
-A component constructor will be called with a `sources` argument, which may
-contain many fields, as we'll cover in the future. For now, lets focus in the
-one field that will almost always be present: `state`.
+Now, we're abble to define our constructor.
 
 ```lua
 return function(sources)
-  local renderStream = sources.state:map(render)
-
   return {
-    reducer = reduce(intent()),
-    render = renderStream
+    reducer = model(intent()),
+    render = sources.state:map(render)
   }
 end
 ```
 
-Here, in the first line of our function, we map the `state` stream to
-a stream of render functions.
-In other words, anytime the `state` stream  emits a new state object,
-the `renderStream` also emits a new render function.
+The `reducer` key is literally the modeling of our intents. And the `render`
+key is a new stream which is the result of passing to our `render` frunction
+each emission of the state.
 
-Than, the render stream is returned as the `render` field, while the `reducer`
-field recieves the stream resulting stream (the merge!) of the reducing of our
-defined intents.
 
 ### Running
 
@@ -244,6 +218,7 @@ wire.run(game)
 ```
 
 That's it. Run `love ./` to see it working.
+
 
 ### Managing state and multiple components
 
