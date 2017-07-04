@@ -6,9 +6,10 @@ management, [onionify](https://github.com/staltz/cycle-onionify).
 
 Wire allows you to take advantage of the awesomeness of LÖVE in a fully
 reactive and delightfull way. No global variables all around, no imperative
-actions and side-effects, no mixed concerns. You just need to wire
-everything up **declarativelly**, and let the data flow freely throughout
-your game, reading game state from a single centralized source of truth (AKA store).
+actions, no mixed concerns (actions, logic, side-effects, etc).
+
+You just need to wire everything up **declarativelly** and let the data flow
+freely throughout your game, from a single centralized data store.
 
 
 # Installation
@@ -27,31 +28,32 @@ missing](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754)
 
 # Concept
 
-In complex systems such as games, the human/computer interaction is mostly of
-an asynchronous nature.
+In complex interactive systems such as games, the human/computer interaction
+is mostly of an asynchronous nature.
 
 Based on this understanding, Wire deals with user intent as a stream of
-events, which are asynchronouslly modeled into data streams.
+events over time, which are asynchronouslly modeled into data streams, and
+then, asynchronouslly converted to side-effects, producing output for the user.
 
-The data streams, then, are asynchronouslly modeled into side-effects,
-producing output for the user.
+To a better understanding, take as for example a stream of user clicks:
 
-To better understand, take as and example a stream of user clicks:
+```
+---o-----o--o-----o----|
+```
 
-Intent: ---C-----C--C-----C----|
+Everytime the user clicks, a new event is emited on the stream.
 
-Everytime the user clicks, a new event is emited in the stream.
-
-Now, we may listen to the Intent events and, on each emission, model them
+Now, we may listen to those intent events and, on each emission, model them
 into a new stream, which will hold the counting of the clicks:
 
-Intent: ---C-----C--C-----C----|  
-Data:   0--1-----2--3-----4----|
+```
+---C-----C--C-----C----|
+0--1-----2--3-----4----|
+```
 
-As the Data stream is listening to the Intent events, everytime the user
-clicks the data gets updated. And by listening to the Data stream events,
-we're abble to display information to the user everytime the data changes,
-automatically.
+Finally, listening to the data stream events, we're abble to display
+information to the user (or produce any other side-effect) everytime
+the data changes, automatically.
 
 
 # How to use
