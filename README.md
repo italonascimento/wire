@@ -317,6 +317,11 @@ wire.run(game)
 That's it. Run `love ./` to see it working.
 
 
-### Managing state and multiple components
+### Dealing with multiple components
+
+More info coming soon. :hourglass:
+
+
+### Parameterized components
 
 More info coming soon. :hourglass:
