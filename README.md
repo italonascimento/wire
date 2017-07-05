@@ -97,10 +97,6 @@ Let's get started by creating a simple `game.lua` file, containing the
 following four functions:
 
 ```lua
-return function()
-
-end
-
 local function intent()
 
 end
@@ -112,13 +108,18 @@ end
 local function render()
 
 end
+
+return function()
+
+end
 ```
 
 ### The constructor
 
-The first function, as you may have noticed, is an anonimous function, and
-will take the role of a constructor. It will recieve a `sources` argument, and
-return a table with two keys: `reducer` and `render`.
+As you may have noticed, the return value of our file is an anonimous function,
+which will take the role of a constructor. It will recieve a `sources`
+argument containing the `state` key (the state stream), and return a table
+with two keys: `reducer` and `render`.
 
 The `reducer` key must refer to a stream of reducer functions, and the
 `render` key to a stream of rendering functions which produce
@@ -250,12 +251,7 @@ each emission of the state.
 The final component looks like this:
 
 ```lua
-return function(sources)
-  return {
-    reducer = model(intent()),
-    render = sources.state:map(render)
-  }
-end
+local rx = require 'rx'
 
 local function intent()
   return {
@@ -296,6 +292,13 @@ local function render(state)
   return function()
     love.graphics.print(message, 32, 32)
   end
+end
+
+return function(sources)
+  return {
+    reducer = model(intent()),
+    render = sources.state:map(render)
+  }
 end
 ```
 
