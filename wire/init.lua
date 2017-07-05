@@ -4,9 +4,9 @@
 -- MIT License
 
 require 'rxlove'
-local assign = 'wire.assign'
-local isolate = 'wire.isolate'
-local run = 'wire.run'
+local assign = require 'wire.assign'
+local isolate = require 'wire.isolate'
+local run = require 'wire.run'
 
 return {
   isolate = isolate,

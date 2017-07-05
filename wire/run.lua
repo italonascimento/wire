@@ -1,5 +1,5 @@
 local rx = require 'rx'
-local assign = 'wire.assign'
+local assign = require 'wire.assign'
 
 return function (gameComponent)
   local reducerMimic = rx.Subject.create()
