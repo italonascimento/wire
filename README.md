@@ -35,15 +35,15 @@ Based on this understanding, Wire deals with user intent as a stream of
 events over time, which are asynchronouslly modeled into data streams, and
 then, asynchronouslly converted to side-effects, producing output for the user.
 
-To a better understanding, take as for example a stream of user clicks:
+To a better understanding, take for example a stream of user clicks:
 
 ```
 ---c-----c--c-----c----|
 ```
 
 Everytime the user clicks, a new event is emited on the stream.
-
-Now, we may listen to those intent events and, on each emission, model them
+Now, suppose we want to keep track of how many times the user has clicked.
+We may listen to the intent events and, on each emission, model them
 into a new stream, which will hold the counting of the clicks:
 
 ```
@@ -58,9 +58,9 @@ would be living in separate streams which would emit updates separatelly over
 time.
 
 Alternativelly, we can move our source of truth to a single place, a
-centralized *data store*, and instead of modeling our intent events directly
-to data, model them to *reducer functions*, which receive the current state
-of the centralized store and return an updated one:
+centralized *game state*, and instead of modeling our intent events directly
+to data, model them to *reducer functions*, which receive the current game
+state and return an updated one:
 
 ```lua
 local function reducer(prevState)
@@ -69,14 +69,14 @@ local function reducer(prevState)
 end
 ```
 
-Than, we end up with three streams:
+Than, we end up with three streams instead of two:
 
 * One of *intent*,
 * One of *reducers*
-* And one of data, our *store*.
+* And one of data, our *state*.
 
 Each intent event will dispatch a reducer event. And on each reducer emission,
-we call the emited function with the current store as argument.
+we call the emited function with the current state as argument.
 
 ```
 -----c--------c-----c------c----|
@@ -84,16 +84,16 @@ we call the emited function with the current store as argument.
 0----1--------2-----3------4----|
 ```
 
-Finally, listening to the store events, we're abble to display
-information to the user or produce any other side-effect, everytime
-the data changes, automatically.
+Finally, by listening to the state stream, we are able to display
+information to the user or produce any other side-effect when the data changes,
+automatically.
 
 
 # How to use
 
 ## Creating a component
 
-Let's get started by creating a simple `game.lua` file containing the
+Let's get started by creating a simple `game.lua` file, containing the
 following four functions:
 
 ```lua
@@ -118,9 +118,14 @@ end
 
 The first function, as you may have noticed, is an anonimous function, and
 will take the role of a constructor. It will recieve a `sources` argument, and
-may return a table with two keys: `reducer` and `render`.
+return a table with two keys: `reducer` and `render`.
 
-As we can't yet define these values, we'll come back to the constructor later.
+The `reducer` key must refer to a stream of reducer functions, and the
+`render` key to a stream of rendering functions which produce
+the desired side-effects when called (i.e. render elements on the screen).
+
+As we don't have any of those streams defined yet, we'll come back to the
+constructor later.
 
 
 ### Intent
@@ -205,12 +210,15 @@ together to return a single stream of all reducers.
 
 ### Render
 
-The `render` function, as you may expect, is where we define what gets
-rendered to the screen.
+The `render` function is where we **define** the rendering function of our
+component.
 
-As we're **just defining**, we won't acctually render anything here.
-Instead, we're going to recieve the current state and return a new function,
-which Wire will use to make the actual rendeing.
+That's right. Instead of acctually rendering stuff, this function will only  
+recieve the current state and return a new function.
+
+That's important because we're not trying to produce any side-effects here, but
+instead we're define our logic. Wire will be encharged of calling the returned
+function to produce the side-effects everytime the state changes.
 
 ```lua
 local function render(state)
@@ -224,7 +232,7 @@ end
 
 ### Wiring it up
 
-Now, we're abble to define our constructor.
+Now we're abble to define our constructor.
 
 ```lua
 return function(sources)
@@ -236,9 +244,60 @@ end
 ```
 
 The `reducer` key is literally the modeling of our intents. And the `render`
-key is a new stream which is the result of passing to our `render` function
+key is a new stream, resultant of passing to our `render` function
 each emission of the state.
 
+The final component looks like this:
+
+```lua
+return function(sources)
+  return {
+    reducer = model(intent()),
+    render = sources.state:map(render)
+  }
+end
+
+local function intent()
+  return {
+    click = love.mousepressed
+  }
+end
+
+local function model(intent)
+  local initialReducer = rx.Observable.of(
+    function()
+      return {
+        clickCount = 0
+      }
+    end
+  )
+
+  local clickReducer = intent.click:map(
+    function()
+      return function(prevState)
+        local newState = {
+          clickCount = prevState.clickCount + 1
+        }
+
+        return newState
+      end
+    end
+  )
+
+  return rx.Observable.merge(
+    initialReducer,
+    clickReducer
+  )
+end
+
+local function render(state)
+  local message = 'Clicks: '..state.clickCount
+
+  return function()
+    love.graphics.print(message, 32, 32)
+  end
+end
+```
 
 ### Running
 
