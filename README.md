@@ -6,10 +6,10 @@ management, [onionify](https://github.com/staltz/cycle-onionify).
 
 Wire allows you to take advantage of the awesomeness of LÖVE in a fully
 reactive and delightfull way. No global variables all around, no imperative
-actions, no mixed concerns (actions, logic, side-effects, etc).
+actions, no mixed concerns (interaction, logic, side-effects, etc).
 
 You just need to wire everything up **declarativelly** and let the data flow
-freely throughout your game, from a single centralized data store.
+freely throughout your game.
 
 
 # Installation
@@ -38,7 +38,7 @@ then, asynchronouslly converted to side-effects, producing output for the user.
 To a better understanding, take as for example a stream of user clicks:
 
 ```
----o-----o--o-----o----|
+---c-----c--c-----c----|
 ```
 
 Everytime the user clicks, a new event is emited on the stream.
@@ -47,12 +47,45 @@ Now, we may listen to those intent events and, on each emission, model them
 into a new stream, which will hold the counting of the clicks:
 
 ```
----C-----C--C-----C----|
+---c-----c--c-----c----|
 0--1-----2--3-----4----|
 ```
 
-Finally, listening to the data stream events, we're abble to display
-information to the user (or produce any other side-effect) everytime
+That's nice, but... If we also needed to keep track of the times the user
+hits the SPACE key, we would need another intent stream, and yet another one
+to keep our data. Well, this is not much scalable, as our source of truth
+would be living in separate streams which would emit updates separatelly over
+time.
+
+Alternativelly, we can move our source of truth to a single place, a
+centralized *data store*, and instead of modeling our intent events directly
+to data, model them to *reducer functions*, which receive the current state
+of the centralized store and return an updated one:
+
+```lua
+local function reducer(prevState)
+  -- proccess stuff
+  return newState
+end
+```
+
+Than, we end up with three streams:
+
+* One of *intent*,
+* One of *reducers*
+* And one of data, our *store*.
+
+Each intent event will dispatch a reducer event. And on each reducer emission,
+we call the emited function with the current store as argument.
+
+```
+-----c--------c-----c------c----|
+----r(0)-----r(1)--r(2)---r(3)--|
+0----1--------2-----3------4----|
+```
+
+Finally, listening to the store events, we're abble to display
+information to the user or produce any other side-effect, everytime
 the data changes, automatically.
 
 
@@ -203,7 +236,7 @@ end
 ```
 
 The `reducer` key is literally the modeling of our intents. And the `render`
-key is a new stream which is the result of passing to our `render` frunction
+key is a new stream which is the result of passing to our `render` function
 each emission of the state.
 
 
