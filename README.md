@@ -1,4 +1,9 @@
-# About
+<h1 align="center">
+<:3&nbsp&nbsp)~<br>
+wire
+</h1>
+
+## About
 
 **Wire** is a small reactive wrapping for [LÖVE](https://love2d.org/) framework,
 highly inspired in [Cycle.js](cycle.js.org) (the web development framework) and it's fractal state
@@ -12,7 +17,7 @@ You just need to wire everything up **declarativelly** and let the data flow
 freely throughout your game.
 
 
-# Installation
+## Installation
 
 Via [luarocks](https://luarocks.org/)
 
@@ -21,7 +26,7 @@ luarocks install wire
 ```
 
 
-# Reactive?
+## Reactive?
 
 Not familiar with reactive programming? You may want to take a look at this
 great article first:
@@ -30,6 +35,6 @@ great article first:
 missing](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754)
 
 
-# Documentation
+## Documentation
 
 https://italonascimento1.gitbooks.io/wire/
