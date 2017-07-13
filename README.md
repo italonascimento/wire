@@ -14,7 +14,11 @@ freely throughout your game.
 
 # Installation
 
-More info coming soon. :hourglass:
+Via [luarocks](https://luarocks.org/)
+
+```sh
+luarocks install wire
+```
 
 
 # Reactive?
