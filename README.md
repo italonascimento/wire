@@ -1,9 +1,6 @@
 <h1 align="center">
-<:3&nbsp&nbsp)~<br>
-wire
+wire <:3&nbsp&nbsp)~
 </h1>
-
-## About
 
 **Wire** is a small reactive wrapping for [LÖVE](https://love2d.org/) framework,
 highly inspired in [Cycle.js](cycle.js.org) (the web development framework) and it's fractal state
