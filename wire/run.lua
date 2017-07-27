@@ -21,5 +21,7 @@ return function (gameComponent)
     render()
   end)
 
-  game.reducer:subscribe(reducerMimic)
+  if game.reducer then
+    game.reducer:subscribe(reducerMimic)
+  end
 end
