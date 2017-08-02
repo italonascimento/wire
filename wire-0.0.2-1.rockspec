@@ -1,7 +1,7 @@
 package = "wire"
-version = "0.0.2-1"
+version = "0.0.3-1"
 source = {
- url = "..."
+ url = "https://github.com/italonascimento/wire"
 }
 description = {
  summary = "Reactive wrapping for LÖVE framework.",
@@ -15,7 +15,7 @@ description = {
  license = "MIT" -- or whatever you like
 }
 dependencies = {
- "lua >= 5.1, < 5.4",
+ "lua >= 5.1, <= 5.3",
  "rxlua == 0.0.2",
  "rxlove == 0.0.1"
 }
