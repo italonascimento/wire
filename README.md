@@ -22,7 +22,7 @@ Via [luarocks](https://luarocks.org/)
 luarocks install wire
 ```
 
-## Hello world
+## Hello reactive world
 
 ```lua
 local rx = require 'rx'
