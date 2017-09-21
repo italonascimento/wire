@@ -38,6 +38,7 @@ local function game(sources)
         })
       end),
       
+      -- update state on key press
       sources.events.keypressed
         :filter(function(key)
           return key == 'space'
@@ -50,7 +51,8 @@ local function game(sources)
           end
         end)
     ),
-
+    
+    -- emit render on state update
     render = sources.state
       :map(function(state)
         return function()
