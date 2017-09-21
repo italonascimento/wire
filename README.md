@@ -22,6 +22,46 @@ Via [luarocks](https://luarocks.org/)
 luarocks install wire
 ```
 
+## Hello world
+
+```lua
+local rx = require 'rx'
+local wire = require 'wire'
+
+local function game(sources)
+  return {
+    reducer = rx.Observable.merge(
+      -- initial state
+      rx.Observable.of(function()
+        return {
+          text = 'Hello World'
+        })
+      end),
+      
+      sources.events.keypressed
+        :filter(function(key)
+          return key == 'space'
+        end)
+        :map(function()
+          return function(prevState)
+            return wire.assign(prevState, {
+              text = 'Hello Interactive World :)'
+            })
+          end
+        end)
+    ),
+
+    render = sources.state
+      :map(function(state)
+        return function()
+          love.graphics.print(state.text, 8, 8)
+        end
+      end)
+  }
+end
+
+wire.run(game)
+```
 
 ## Documentation
 
