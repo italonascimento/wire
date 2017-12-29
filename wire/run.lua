@@ -1,5 +1,5 @@
 local rx = require 'rx'
-local assign = require 'wire.assign'
+local merge = require 'wire.merge'
 
 local function getLoveEvents()
   local events = {}
@@ -42,7 +42,7 @@ return function (gameComponent)
 
   local gameState = reducerMimic
     :scan(function(prevState, reduce)
-      return assign(prevState, reduce(prevState))
+      return merge(prevState, reduce(prevState))
     end, {})
 
   local game = gameComponent({

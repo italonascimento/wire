@@ -1,8 +1,8 @@
-local assign = 'wire.assign'
+local merge = 'wire.merge'
 
 return function (component, key)
   return function(sources)
-    local isolatedSources = assign(sources, {
+    local isolatedSources = merge(sources, {
       state = sources.state:map(function(state)
         return state[key]
       end)
