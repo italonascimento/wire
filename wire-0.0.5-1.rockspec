@@ -1,5 +1,5 @@
 package = "wire"
-version = "0.0.4-1"
+version = "0.0.5-1"
 source = {
  url = "https://github.com/italonascimento/wire"
 }
@@ -25,5 +25,6 @@ build = {
    wire = "wire/init.lua",
    ["wire.run"] = "wire/run.lua",
    ["wire.isolate"] = "wire/isolate.lua",
+   ["wire.merge"] = "wire/merge.lua",
  }
 }
