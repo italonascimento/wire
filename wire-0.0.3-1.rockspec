@@ -1,5 +1,5 @@
 package = "wire"
-version = "0.0.3-1"
+version = "0.0.4-1"
 source = {
  url = "https://github.com/italonascimento/wire"
 }
@@ -16,8 +16,7 @@ description = {
 }
 dependencies = {
  "lua >= 5.1, <= 5.3",
- "rxlua == 0.0.2",
- "rxlove == 0.0.1"
+ "rxlua == 0.0.2"
 }
 build = {
  type = "builtin",
@@ -26,6 +25,5 @@ build = {
    wire = "wire/init.lua",
    ["wire.run"] = "wire/run.lua",
    ["wire.isolate"] = "wire/isolate.lua",
-   ["wire.assign"] = "wire/assign.lua"
  }
 }
