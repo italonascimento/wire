@@ -1,4 +1,4 @@
-local merge = 'wire.merge'
+local merge = require 'wire.merge'
 
 return function (component, key)
   return function(sources)
