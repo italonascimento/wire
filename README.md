@@ -1,5 +1,7 @@
 <h1 align="center">
-wire <:3&nbsp&nbsp)~
+&nbsp<:3&nbsp&nbsp)~
+<br>
+Wire
 </h1>
 
 **Wire** is a small reactive wrapping for [LÖVE](https://love2d.org/) framework,
@@ -31,34 +33,43 @@ local wire = require 'wire'
 local function game(sources)
   return {
     reducer = rx.Observable.merge(
+
       -- initial state
       rx.Observable.of(function()
         return {
           text = 'Hello World'
         })
       end),
-      
+
       -- update state on key press
       sources.events.keypressed
-        :filter(function(key)
-          return key == 'space'
-        end)
-        :map(function()
-          return function(prevState)
-            return wire.assign(prevState, {
-              text = 'Hello Interactive World :)'
-            })
+        :filter(
+          function(key)
+            return key == 'space'
           end
-        end)
+        )
+        :map(
+          function()
+            -- return a reducer function to update state
+            return function(prevState)
+              -- returned table will be merged to current
+              -- state, updating value of text key
+              return {
+                text = 'Hello Interactive World :)'
+              }
+            end
+          end
+        )
     ),
-    
-    -- emit render on state update
-    render = sources.state
-      :map(function(state)
+
+    -- emit render function on state update
+    render = sources.state:map(
+      function(state)
         return function()
           love.graphics.print(state.text, 8, 8)
         end
-      end)
+      end
+    )
   }
 end
 
