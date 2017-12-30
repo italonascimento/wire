@@ -1,5 +1,5 @@
 package = "wire"
-version = "0.0.5-1"
+version = "0.0.6-1"
 source = {
  url = "https://github.com/italonascimento/wire"
 }
