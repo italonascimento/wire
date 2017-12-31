@@ -10,13 +10,15 @@ return function (component, key)
 
     local entity = component(isolatedSources)
 
-    entity.reducer = entity.reducer:map(function(reducer)
-      return function(prevState)
-        local newState = {}
-        newState[key] = reducer(prevState[key])
-        return newState
-      end
-    end)
+    if entity.reducer then
+      entity.reducer = entity.reducer:map(function(reducer)
+        return function(prevState)
+          local newState = {}
+          newState[key] = reducer(prevState[key])
+          return newState
+        end
+      end)
+    end
 
     return entity
   end
