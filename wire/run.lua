@@ -5,6 +5,7 @@ local function getLoveEvents()
   local events = {}
   local loveEvents = {
     'directorydropped',
+    'load',
     'draw',
     'filedropped',
     'focus',
@@ -36,6 +37,20 @@ local function getLoveEvents()
   return events
 end
 
+local function associate(stream1, stream2)
+  stream1
+    :combineLatest(
+      stream2:take(1),
+      function(_, fn)
+        return fn
+      end
+    )
+    :subscribe(function(fn)
+      fn()
+    end
+  )
+end
+
 return function (gameComponent)
   local events = getLoveEvents()
   local reducerMimic = rx.Subject.create()
@@ -53,15 +68,8 @@ return function (gameComponent)
     events = events
   })
 
-  rx.Observable.combineLatest(
-    game.render,
-    love.draw,
-    function(render)
-      return render
-    end
-  ):subscribe(function(render)
-    render()
-  end)
+  if game.load then associate(love.load, game.load) end
+  if game.draw then associate(love.draw, game.draw) end
 
   if game.reducer then
     game.reducer:subscribe(reducerMimic)
