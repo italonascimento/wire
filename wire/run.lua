@@ -45,8 +45,11 @@ return function (gameComponent)
       return merge(prevState, reduce(prevState))
     end, {})
 
+  local replayState = rx.ReplaySubject.create(1)
+  gameState:subscribe(replayState)
+
   local game = gameComponent({
-    state = gameState,
+    state = replayState,
     events = events
   })
 
