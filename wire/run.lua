@@ -37,7 +37,7 @@ local function getLoveEvents()
   return events
 end
 
-local function associate(stream1, stream2)
+local function associateDraw(stream1, stream2)
   stream1
     :combineLatest(
       stream2:take(1),
@@ -63,15 +63,23 @@ return function (gameComponent)
   local replayState = rx.ReplaySubject.create(1)
   gameState:subscribe(replayState)
 
-  local game = gameComponent({
-    state = replayState,
-    events = events
-  })
+  love.load:subscribe(function(arg)
+    local game = gameComponent({
+      state = replayState,
+      events = events,
+      arg = rx.Observable.fromValue(arg),
+    })
 
-  if game.load then associate(love.load, game.load) end
-  if game.draw then associate(love.draw, game.draw) end
+    if game.draw then associateDraw(love.draw, game.draw) end
 
-  if game.reducer then
-    game.reducer:subscribe(reducerMimic)
-  end
+    if game.reducer then
+      game.reducer:subscribe(reducerMimic)
+    end
+
+    if game.effects then
+      game.effects:subscribe(function(effect)
+        effect()
+      end)
+    end
+  end)
 end
